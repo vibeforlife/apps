@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shukre Ilahi Finance Module Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --color-bg:#f7f6f2; --color-surface:#fbfbf8; --color-surface-2:#f3f0ea; --color-surface-offset:#ece8df;
+      --color-border:#d9d2c7; --color-divider:#e2ddd4; --color-text:#201d19; --color-text-muted:#666058; --color-text-faint:#989186;
+      --color-text-inverse:#f9f8f4; --color-primary:#0d6b61; --color-primary-hover:#09534c; --color-primary-soft:#dcece8;
+      --color-success:#3e7b32; --color-warning:#b26a12; --color-error:#a33b68; --shadow-sm:0 1px 2px rgba(31,24,18,.08); --shadow-md:0 10px 28px rgba(31,24,18,.08);
+      --radius-sm:10px; --radius-md:14px; --radius-lg:20px; --radius-xl:28px; --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px; --space-8:32px; --space-10:40px; --space-12:48px;
+      --text-xs:12px; --text-sm:14px; --text-base:16px; --text-lg:20px; --text-xl:30px; --font-body:'Inter', system-ui, sans-serif;
+      --sidebar-width:280px; --sidebar-collapsed-width:80px;
+    }
+    [data-theme="dark"] {
+      --color-bg:#151412; --color-surface:#1d1b18; --color-surface-2:#24211e; --color-surface-offset:#2a2723; --color-border:#3c3832; --color-divider:#302d29;
+      --color-text:#ede9df; --color-text-muted:#b0a89b; --color-text-faint:#7d766b; --color-text-inverse:#141310; --color-primary:#57a79c; --color-primary-hover:#78bdb4; --color-primary-soft:#233633;
+      --color-success:#7cbc67; --color-warning:#e0a34f; --color-error:#d27198; --shadow-sm:0 1px 2px rgba(0,0,0,.25); --shadow-md:0 12px 30px rgba(0,0,0,.28);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)}
+    body{min-height:100vh;font-size:var(--text-base);line-height:1.5}
+    button,input,select,textarea{font:inherit}
+
+    /* Shell: flex-based layout */
+    .app-shell{display:flex;min-height:100vh}
+    .sidebar{
+      flex:0 0 var(--sidebar-width);
+      max-width:var(--sidebar-width);
+      background:linear-gradient(180deg,var(--color-surface),var(--color-surface-2));
+      border-right:1px solid var(--color-border);
+      padding:var(--space-5);
+      position:sticky;
+      top:0;
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-6);
+      overflow:hidden;
+      z-index:40;
+    }
+    .app-shell.sidebar-collapsed .sidebar{
+      flex:0 0 var(--sidebar-collapsed-width);
+      max-width:var(--sidebar-collapsed-width);
+      padding-inline:12px;
+    }
+    .main{
+      flex:1 1 auto;
+      min-width:0;
+      padding:var(--space-6);
+      display:grid;
+      gap:var(--space-6);
+    }
+
+    .sidebar-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+    .brand{display:flex;gap:var(--space-3);align-items:center;min-width:0}
+    .brand-mark{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,var(--color-primary),#8fb7a8);display:grid;place-items:center;color:white;box-shadow:var(--shadow-sm);flex:0 0 auto}
+    .brand-copy{min-width:0}
+    .brand h1{font-size:18px;line-height:1.2;margin:0}
+    .brand p{margin:4px 0 0;color:var(--color-text-muted);font-size:var(--text-sm)}
+
+    .collapse-btn,.theme-toggle,.seed-button,.menu-btn,.btn,.icon-btn,.small-btn{
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--color-border);
+      background:var(--color-surface);
+      color:var(--color-text);
+      cursor:pointer;
+    }
+    .collapse-btn{width:40px;height:40px;display:grid;place-items:center;padding:0;flex:0 0 auto}
+
+    .nav{display:grid;gap:var(--space-2)}
+    .nav button{
+      display:flex;align-items:center;gap:12px;
+      padding:14px 16px;
+      border-radius:14px;
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--color-text);
+      text-align:left;
+      cursor:pointer;
+    }
+    .nav button.active{
+      background:var(--color-primary-soft);
+      border-color:color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+      color:var(--color-primary-hover);
+      font-weight:700;
+    }
+    .nav-icon{width:20px;text-align:center;flex:0 0 20px}
+    .nav-label{transition:opacity .16s ease}
+    .sidebar-footer{margin-top:auto;display:grid;gap:var(--space-3)}
+    .sidebar-footer .label{transition:opacity .16s ease}
+
+    .app-shell.sidebar-collapsed .brand-copy,
+    .app-shell.sidebar-collapsed .nav-label,
+    .app-shell.sidebar-collapsed .sidebar-footer .label{
+      opacity:0;pointer-events:none;width:0;overflow:hidden;
+    }
+    .app-shell.sidebar-collapsed .nav button{
+      justify-content:center;
+      padding-inline:8px;
+    }
+
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4);flex-wrap:wrap}
+    .title-wrap h2{margin:0;font-size:var(--text-xl)}
+    .title-wrap p{margin:6px 0 0;color:var(--color-text-muted)}
+    .topbar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .menu-btn{display:none}
+    .main .pill{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;background:var(--color-primary-soft);color:var(--color-primary-hover);font-size:var(--text-sm);font-weight:700}
+
+    .stat-card,.panel,.table-wrap,.modal-card{
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-sm);
+    }
+
+    .panel{padding:var(--space-6)}
+    .panel h3{margin:0 0 var(--space-4);font-size:22px}
+    .grid-2{display:grid;grid-template-columns:1.2fr .8fr;gap:var(--space-6)}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4)}
+    .field{display:grid;gap:8px}
+    .field.full{grid-column:1/-1}
+    label{font-size:var(--text-sm);font-weight:600;color:var(--color-text-muted)}
+    input,select,textarea{
+      width:100%;padding:12px 14px;border-radius:12px;
+      border:1px solid var(--color-border);
+      background:var(--color-surface-2);color:var(--color-text);
+    }
+    textarea{min-height:92px;resize:vertical}
+    .button-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:var(--space-4)}
+    .btn-primary{background:var(--color-primary);border-color:var(--color-primary);color:var(--color-text-inverse);font-weight:700}
+    .btn-secondary{background:var(--color-surface);color:var(--color-text)}
+    .subtle{color:var(--color-text-muted);font-size:var(--text-sm)}
+
+    .schedule-box{display:grid;gap:var(--space-4)}
+    .payment-list{display:grid;gap:12px;max-height:520px;overflow:auto;padding-right:4px}
+    .payment-item,.student-card{padding:14px;border-radius:14px;background:var(--color-surface-2);border:1px solid var(--color-divider)}
+    .payment-item strong,.student-card strong{display:block;font-size:var(--text-sm)}
+    .payment-item span,.student-card span{display:block;color:var(--color-text-muted);font-size:13px;margin-top:4px}
+
+    .screen{display:none;gap:var(--space-6)}
+    .screen.active{display:grid}
+
+    .toolbar{display:grid;gap:var(--space-4)}
+    .filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .table-wrap{overflow:hidden}
+    .table-toolbar{
+      padding:var(--space-4);border-bottom:1px solid var(--color-divider);
+      display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;
+      background:var(--color-surface-2);
+    }
+    .table-container{overflow:auto;max-height:780px}
+    table{width:100%;border-collapse:collapse;min-width:1820px}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--color-divider);text-align:left;vertical-align:top;font-size:14px}
+    th{position:sticky;top:0;background:var(--color-surface);z-index:2}
+    th button{width:100%;display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--color-text);background:none;border:none;padding:0;cursor:pointer}
+    tr:hover td{background:color-mix(in srgb,var(--color-primary) 5%,var(--color-surface))}
+    .badge{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}
+    .badge.y{background:color-mix(in srgb,var(--color-success) 18%,var(--color-surface));color:var(--color-success)}
+    .badge.n{background:color-mix(in srgb,var(--color-warning) 18%,var(--color-surface));color:var(--color-warning)}
+    .muted-card{padding:var(--space-4);border-radius:16px;background:var(--color-surface-2);border:1px dashed var(--color-border)}
+    .legend{display:grid;gap:10px}
+    .legend div{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+    .student-list{display:grid;gap:12px;max-height:360px;overflow:auto}
+    .split-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+    .kpi-line{display:flex;gap:8px;flex-wrap:wrap}
+    .table-actions{white-space:nowrap}
+    .small-btn{padding:8px 10px;border-radius:999px;border:1px solid var(--color-border);background:var(--color-surface-2);cursor:pointer;font-size:12px}
+
+    .modal{position:fixed;inset:0;background:rgba(15,12,10,.45);display:none;align-items:center;justify-content:center;padding:24px;z-index:50}
+    .modal.open{display:flex}
+    .modal-card{width:min(780px,100%);padding:24px;max-height:90vh;overflow:auto}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+
+    .sidebar-backdrop{display:none}
+    .app-shell.sidebar-open .sidebar-backdrop{
+      position:fixed;inset:0;background:rgba(0,0,0,.28);display:block;z-index:30;
+    }
+
+    /* Reporting */
+    .report-filters{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+    .report-filters .chip-group{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{padding:7px 11px;border-radius:999px;border:1px solid var(--color-border);background:var(--color-surface-2);font-size:13px;cursor:pointer}
+    .chip.active{background:var(--color-primary-soft);border-color:var(--color-primary);color:var(--color-primary-hover);font-weight:600}
+    .multi-select{min-width:120px}
+    .report-table-wrap{overflow:auto}
+    .report-table{width:100%;border-collapse:collapse;min-width:900px}
+    .report-table th,.report-table td{padding:8px 10px;border:1px solid var(--color-divider);font-size:13px}
+    .report-table thead th{background:var(--color-surface-2);text-align:center}
+    .report-table tbody th{background:var(--color-surface-2);font-weight:600}
+
+    @media (max-width:1100px){
+      .app-shell,
+      .app-shell.sidebar-collapsed{
+        flex-direction:column;
+      }
+      .sidebar{
+        position:fixed;
+        left:0;top:0;bottom:0;
+        width:min(320px,88vw);
+        max-width:none;
+        z-index:40;
+        transform:translateX(-100%);
+        transition:transform .2s ease;
+      }
+      .app-shell.sidebar-open .sidebar{
+        transform:translateX(0);
+      }
+      .app-shell.sidebar-collapsed .brand-copy,
+      .app-shell.sidebar-collapsed .nav-label,
+      .app-shell.sidebar-collapsed .sidebar-footer .label{
+        opacity:1;pointer-events:auto;width:auto;overflow:visible;
+      }
+      .app-shell.sidebar-collapsed .nav button{
+        justify-content:flex-start;padding:14px 16px;
+      }
+      .main{padding:18px}
+      .menu-btn{display:inline-flex}
+      .hero,.grid-2,.stats,.filter-grid,.form-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 64 64" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 35c9-1 13-7 14-18 4 10 9 15 18 18-9 2-14 7-18 17-2-9-7-15-14-17Z" fill="currentColor" opacity=".94"/>
+            </svg>
+          </div>
+          <div class="brand-copy">
+            <h1>Shukre Ilahi</h1>
+            <p>Finance module prototype</p>
+          </div>
+        </div>
+        <button class="collapse-btn" id="collapseSidebar" aria-label="Toggle sidebar">☰</button>
+      </div>
+      <nav class="nav" aria-label="Primary navigation">
+        <button class="active" data-screen-target="input-screen"><span class="nav-icon">📝</span><span class="nav-label">Scholarship input</span></button>
+        <button data-screen-target="management-screen"><span class="nav-icon">💳</span><span class="nav-label">Payment management</span></button>
+        <button data-screen-target="reporting-screen"><span class="nav-icon">📊</span><span class="nav-label">Reporting</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="theme-toggle" data-theme-toggle><span class="label">Toggle theme</span></button>
+        <button class="seed-button" id="resetData"><span class="label">Reload 100 dummy records</span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="title-wrap">
+          <h2>Scholarship finance operations</h2>
+          <p>Prototype for capturing committed scholarship schedules and tracking actual disbursements.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="menu-btn" id="openMobileMenu">Menu</button>
+          <span class="pill">Volunteer-run scholarship workflow</span>
+        </div>
+      </div>
+
+      <!-- A. Input screen -->
+      <section id="input-screen" class="screen active" aria-labelledby="input-title">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="split-header">
+              <div>
+                <h3 id="input-title">A. Scholarship input screen</h3>
+                <p class="subtle">Enter a new student and generate a term-by-term scholarship schedule.</p>
+              </div>
+              <div class="kpi-line">
+                <span class="pill">Creates new student records</span>
+              </div>
+            </div>
+            <form id="studentForm">
+              <div class="form-grid">
+                <div class="field"><label for="applicationId">Application ID</label><input id="applicationId" value="APP-2051" /></div>
+                <div class="field"><label for="paymentBaseId">Payment ID prefix</label><input id="paymentBaseId" value="PAY-2051" /></div>
+                <div class="field"><label for="studentName">Student name</label><input id="studentName" value="Ammar Lokhandwala" /></div>
+                <div class="field"><label for="partnerId">Partner ID</label><input id="partnerId" value="IND-PT-08" /></div>
+                <div class="field"><label for="country">Country</label><select id="country"><option>India</option><option>Pakistan</option><option>Bangladesh</option></select></div>
+                <div class="field"><label for="courseYears">Course duration (years)</label><input id="courseYears" type="number" min="1" value="4" /></div>
+                <div class="field"><label for="semestersPerYear">Semesters per year</label><input id="semestersPerYear" type="number" min="1" value="2" /></div>
+                <div class="field"><label for="annualScholarship">Annual scholarship committed</label><input id="annualScholarship" type="number" min="0" value="100000" /></div>
+                <div class="field"><label for="startDate">First payment due date</label><input id="startDate" type="date" value="2026-08-15" /></div>
+                <div class="field"><label for="currency">Currency</label><select id="currency"><option>INR</option><option>PKR</option><option>CAD</option><option>USD</option></select></div>
+                <div class="field full"><label for="notes">Notes</label><textarea id="notes">Scholarship approved subject to semester progression and marksheet review.</textarea></div>
+              </div>
+              <div class="button-row">
+                <button type="submit" class="btn btn-primary">Add student and schedule</button>
+                <button type="button" class="btn btn-secondary" id="previewSchedule">Preview schedule</button>
+                <button type="button" class="btn btn-secondary" id="loadExample">Load example again</button>
+              </div>
+            </form>
+          </div>
+          <div class="panel schedule-box">
+            <div>
+              <h3 style="margin-bottom:8px;">Generated schedule preview</h3>
+              <p class="subtle">Each payment row includes Payment ID, Application ID, Payment Committed, and Payment Due Date.</p>
+            </div>
+            <div class="payment-list" id="generatedSchedule"></div>
+            <div class="muted-card">
+              Saving the form adds the student’s schedule directly into the management table so staff can continue the finance workflow without re-entry.
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="split-header">
+            <div>
+              <h3 style="margin-bottom:8px;">Recently added students</h3>
+              <p class="subtle">This helps developers validate how new schedules flow into operational records.</p>
+            </div>
+          </div>
+          <div class="student-list" id="studentList"></div>
+        </div>
+      </section>
+
+      <!-- B. Management screen -->
+      <section id="management-screen" class="screen" aria-labelledby="management-title">
+        <div class="panel toolbar">
+          <div class="split-header">
+            <div>
+              <h3 id="management-title">B. Payment management screen</h3>
+              <p class="subtle">List view supports filtering by every requested field, sorting on every column, and inline edit access for each payment record.</p>
+            </div>
+          </div>
+          <div class="filter-grid" id="filters"></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <div class="subtle"><span id="visibleRecords">0</span> records visible</div>
+            <div class="subtle">Use Edit to update payment status, amount paid, challan number, mode, dates, notes, and academic placement.</div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr id="tableHead"></tr></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- C. Reporting screen -->
+      <section id="reporting-screen" class="screen" aria-labelledby="reporting-title">
+        <div class="panel">
+          <div class="split-header">
+            <div>
+              <h3 id="reporting-title">C. Country-level reporting</h3>
+              <p class="subtle">Filter by time window, year, and month, then review India / Pakistan scholarship volumes and balances in CAD.</p>
+            </div>
+          </div>
+
+          <div class="report-filters" id="reportFilters">
+            <div class="chip-group" id="rangeChips">
+              <span class="subtle" style="align-self:center;">Range:</span>
+              <button class="chip active" data-range="all">All</button>
+              <button class="chip" data-range="ytd">YTD</button>
+              <button class="chip" data-range="history">HistoryTD</button>
+              <button class="chip" data-range="future">Future from Today</button>
+            </div>
+            <div class="chip-group">
+              <span class="subtle" style="align-self:center;">Year:</span>
+              <select id="yearSelect" class="multi-select" multiple size="4"></select>
+            </div>
+            <div class="chip-group">
+              <span class="subtle" style="align-self:center;">Month:</span>
+              <select id="monthSelect" class="multi-select" multiple size="4">
+                <option value="1">Jan</option>
+                <option value="2">Feb</option>
+                <option value="3">Mar</option>
+                <option value="4">Apr</option>
+                <option value="5">May</option>
+                <option value="6">Jun</option>
+                <option value="7">Jul</option>
+                <option value="8">Aug</option>
+                <option value="9">Sep</option>
+                <option value="10">Oct</option>
+                <option value="11">Nov</option>
+                <option value="12">Dec</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="report-table-wrap">
+            <table class="report-table" aria-describedby="reporting-title">
+              <thead>
+                <tr>
+                  <th rowspan="2" scope="col">Country</th>
+                  <th colspan="2" scope="colgroup"># of Students</th>
+                  <th colspan="2" scope="colgroup">Amount Committed (CAD)</th>
+                  <th colspan="2" scope="colgroup">Amount Paid (CAD)</th>
+                  <th colspan="2" scope="colgroup">Balance Amount (CAD)</th>
+                </tr>
+                <tr>
+                  <th scope="col">Approved</th>
+                  <th scope="col">Returning</th>
+                  <th scope="col">Approved</th>
+                  <th scope="col">Returning</th>
+                  <th scope="col">Approved</th>
+                  <th scope="col">Returning</th>
+                  <th scope="col">Approved</th>
+                  <th scope="col">Returning</th>
+                </tr>
+              </thead>
+              <tbody id="reportBody">
+                <tr>
+                  <th scope="row">India</th>
+                  <td colspan="8">—</td>
+                </tr>
+                <tr>
+                  <th scope="row">Pakistan</th>
+                  <td colspan="8">—</td>
+                </tr>
+                <tr>
+                  <th scope="row">Total in CAD</th>
+                  <td colspan="8">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Edit modal -->
+  <div class="modal" id="editModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3 style="margin:0;">Edit payment record</h3>
+          <p class="subtle" id="editMeta" style="margin:6px 0 0;"></p>
+        </div>
+        <button class="icon-btn" id="closeModal" aria-label="Close edit modal">✕</button>
+      </div>
+      <form id="editForm">
+        <div class="form-grid">
+          <div class="field"><label for="editApplicationId">Application ID</label><input id="editApplicationId" name="applicationId" /></div>
+          <div class="field"><label for="editPartnerId">Partner ID</label><input id="editPartnerId" name="partnerId" /></div>
+          <div class="field"><label for="editStudentName">Student Name</label><input id="editStudentName" name="studentName" /></div>
+          <div class="field"><label for="editCountry">Country</label><select id="editCountry" name="country"><option>India</option><option>Pakistan</option><option>Bangladesh</option></select></div>
+          <div class="field"><label for="editCurrentYear">Current Year</label><input id="editCurrentYear" name="currentYear" type="number" min="1" /></div>
+          <div class="field"><label for="editCurrentSemester">Current Semester</label><input id="editCurrentSemester" name="currentSemester" type="number" min="1" /></div>
+          <div class="field"><label for="editPaid">Paid (Y/N)</label><select id="editPaid" name="paid"><option>Y</option><option>N</option></select></div>
+          <div class="field"><label for="editAmountCommitted">Amount Committed</label><input id="editAmountCommitted" name="amountCommitted" type="number" min="0" /></div>
+          <div class="field"><label for="editAmountPaid">Amount Paid</label><input id="editAmountPaid" name="amountPaid" type="number" min="0" /></div>
+          <div class="field"><label for="editPaymentDueDate">Payment Due Date</label><input id="editPaymentDueDate" name="paymentDueDate" type="date" /></div>
+          <div class="field"><label for="editPaymentMadeDate">Payment Made Date</label><input id="editPaymentMadeDate" name="paymentMadeDate" type="date" /></div>
+          <div class="field"><label for="editChallanNumber">Challan Number</label><input id="editChallanNumber" name="challanNumber" /></div>
+          <div class="field"><label for="editModeOfPayment">Mode of Payment</label><select id="editModeOfPayment" name="modeOfPayment"><option value=""></option><option>Bank Transfer</option><option>Cheque</option><option>UPI</option><option>Cashier Order</option></select></div>
+          <div class="field full"><label for="editNotes">Notes</label><textarea id="editNotes" name="notes"></textarea></div>
+        </div>
+        <div class="button-row">
+          <button type="submit" class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const FX_INR_TO_CAD = 0.015;
+    const FX_PKR_TO_CAD = 0.0051;
+
+    const columns = [
+      { key:'applicationId', label:'Application ID' },
+      { key:'partnerId', label:'Partner ID' },
+      { key:'studentName', label:'Student Name' },
+      { key:'currentYear', label:'Current Year' },
+      { key:'currentSemester', label:'Current Semester' },
+      { key:'paid', label:'Paid (Y/N)' },
+      { key:'amountCommitted', label:'Amount Committed' },
+      { key:'amountPaid', label:'Amount Paid' },
+      { key:'paymentDueDate', label:'Payment Due Date' },
+      { key:'paymentMadeDate', label:'Payment Made Date' },
+      { key:'challanNumber', label:'Challan Number' },
+      { key:'modeOfPayment', label:'Mode of Payment' },
+      { key:'notes', label:'Notes' },
+      { key:'country', label:'Country' },
+      { key:'actions', label:'Actions' }
+    ];
+
+    const filterTypes = {
+      applicationId:'text', partnerId:'text', studentName:'text',
+      currentYear:'select', currentSemester:'select', paid:'select',
+      amountCommitted:'text', amountPaid:'text',
+      paymentDueDate:'text', paymentMadeDate:'text',
+      challanNumber:'text', modeOfPayment:'select',
+      notes:'text', country:'select'
+    };
+
+    const sampleNames = ['Ammar Lokhandwala','Zehra Motiwala','Husain Khokhar','Fatemah Patwa','Ali Rangwala','Sakina Vhora','Mohammed Lakdawala','Mariam Kanchwala','Mustafa Tinwala','Zainab Presswala','Burhan Kapadia','Najla Bharmal','Taha Doctor','Kulsum Attarwala','Saif Kagalwala','Rukaiya Kanchwala','Abbas Ujjainwala','Tasneem Mithaiwala','Huzefa Sidhpurwala','Yasmin Bharwani'];
+    const partners = ['IND-PT-01','IND-PT-03','IND-PT-08','IND-PT-11','PAK-PT-02','PAK-PT-05'];
+    const countriesList = ['India','Pakistan'];
+    const paymentModes = ['Bank Transfer','Cheque','UPI','Cashier Order'];
+    const noteBank = ['Marksheets pending verification','Cleared after partner confirmation','Urgent release requested','Awaiting donor batch release','Paid against semester invoice','Name matched with institution letter'];
+
+    let data = [];
+    let studentProfiles = [];
+    let sortState = { key:'paymentDueDate', direction:'asc' };
+    let editingRecordId = null;
+    let recordCounter = 0;
+    const appShell = document.getElementById('appShell');
+
+    function rand(seed){ const x = Math.sin(seed) * 10000; return x - Math.floor(x); }
+    function formatCurrency(n){ return new Intl.NumberFormat('en-CA', { maximumFractionDigits: 0 }).format(Number(n || 0)); }
+    function nextRecordId(){ recordCounter += 1; return `row-${recordCounter}`; }
+
+    function buildDummyData(){
+      recordCounter = 0;
+      const today = new Date();
+      const baseYear = today.getFullYear() - 2; // spread over ~3 years
+      data = Array.from({length:100}, (_,i) => {
+        const yearOffset = Math.floor(i / 25); // 0..3
+        const year = (i % 4) + 1;
+        const semester = (i % 2) + 1;
+        const committed = 45000 + Math.round(rand(i+1) * 95000);
+        const isPaid = rand(i+20) > 0.38 ? 'Y' : 'N';
+        const paidAmount = isPaid === 'Y' ? committed - Math.round(rand(i+44) * 4000) : 0;
+        const dueMonth = (i % 12); // 0..11
+        const dueDate = new Date(baseYear + yearOffset, dueMonth, (i % 27) + 1);
+        const madeDate = isPaid === 'Y'
+          ? new Date(dueDate.getFullYear(), dueDate.getMonth(), Math.min(dueDate.getDate() + (i % 9), 28))
+          : null;
+        const country = countriesList[i % countriesList.length];
+        return {
+          recordId: nextRecordId(),
+          applicationId:`APP-${2001 + i}`,
+          partnerId:partners[i % partners.length],
+          studentName:sampleNames[i % sampleNames.length],
+          currentYear:String(year),
+          currentSemester:String(semester),
+          paid:isPaid,
+          amountCommitted:committed,
+          amountPaid:paidAmount,
+          paymentDueDate:dueDate.toISOString().slice(0,10),
+          paymentMadeDate:madeDate ? madeDate.toISOString().slice(0,10) : '',
+          challanNumber:isPaid === 'Y' ? `CH-${String(70000 + i)}` : '',
+          modeOfPayment:isPaid === 'Y' ? paymentModes[i % paymentModes.length] : '',
+          notes:noteBank[i % noteBank.length],
+          country
+        };
+      });
+      syncStudentProfiles();
+    }
+
+    function syncStudentProfiles(){
+      const grouped = new Map();
+      data.forEach(row => {
+        if(!grouped.has(row.applicationId)){
+          grouped.set(row.applicationId, {
+            applicationId: row.applicationId,
+            studentName: row.studentName,
+            partnerId: row.partnerId,
+            country: row.country,
+            payments: 0,
+            committed: 0
+          });
+        }
+        const entry = grouped.get(row.applicationId);
+        entry.payments += 1;
+        entry.committed += Number(row.amountCommitted || 0);
+      });
+      studentProfiles = [...grouped.values()].sort((a,b) => a.applicationId.localeCompare(b.applicationId, undefined, { numeric:true }));
+    }
+
+    function renderStats(){
+      // stats no longer displayed, but kept in case you want to surface them later
+    }
+
+    function buildScheduleFromForm(){
+      const applicationId = document.getElementById('applicationId').value.trim() || `APP-${2000 + studentProfiles.length + 1}`;
+      const paymentBaseId = document.getElementById('paymentBaseId').value.trim() || `PAY-${2000 + studentProfiles.length + 1}`;
+      const studentName = document.getElementById('studentName').value.trim() || 'New Student';
+      const partnerId = document.getElementById('partnerId').value.trim() || 'IND-PT-01';
+      const country = document.getElementById('country').value;
+      const courseYears = Math.max(1, parseInt(document.getElementById('courseYears').value || '1',10));
+      const semestersPerYear = Math.max(1, parseInt(document.getElementById('semestersPerYear').value || '1',10));
+      const annualScholarship = Math.max(0, parseInt(document.getElementById('annualScholarship').value || '0',10));
+      const startDateValue = document.getElementById('startDate').value || '2026-08-15';
+      const startDate = new Date(startDateValue + 'T00:00:00');
+      const notes = document.getElementById('notes').value.trim();
+      const perSemester = Math.round(annualScholarship / semestersPerYear);
+      const rows = [];
+      let counter = 1;
+      for(let y = 1; y <= courseYears; y++){
+        for(let s = 1; s <= semestersPerYear; s++){
+          const due = new Date(startDate);
+          due.setMonth(startDate.getMonth() + ((y - 1) * 12) + ((s - 1) * Math.floor(12 / semestersPerYear)));
+          rows.push({
+            recordId: nextRecordId(),
+            paymentId:`${paymentBaseId}-${String(counter).padStart(2,'0')}`,
+            applicationId,
+            partnerId,
+            studentName,
+            currentYear:String(y),
+            currentSemester:String(s),
+            paid:'N',
+            amountCommitted:perSemester,
+            amountPaid:0,
+            paymentDueDate:due.toISOString().slice(0,10),
+            paymentMadeDate:'',
+            challanNumber:'',
+            modeOfPayment:'',
+            notes,
+            country
+          });
+          counter++;
+        }
+      }
+      return { rows, applicationId, studentName, partnerId, country };
+    }
+
+    function renderSchedulePreview(rows){
+      const list = document.getElementById('generatedSchedule');
+      list.innerHTML = '';
+      rows.forEach(row => {
+        const div = document.createElement('div');
+        div.className = 'payment-item';
+        div.innerHTML = `
+          <strong>${row.paymentId} · Year ${row.currentYear} Semester ${row.currentSemester}</strong>
+          <span>Application ID: ${row.applicationId}</span>
+          <span>Payment Committed: ${row.country === 'Pakistan' ? 'PKR' : 'INR'} ${formatCurrency(row.amountCommitted)}</span>
+          <span>Payment Due Date: ${row.paymentDueDate}</span>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function renderStudentList(){
+      const list = document.getElementById('studentList');
+      list.innerHTML = '';
+      studentProfiles.slice().reverse().slice(0,10).forEach(student => {
+        const div = document.createElement('div');
+        div.className = 'student-card';
+        div.innerHTML = `
+          <strong>${student.studentName}</strong>
+          <span>${student.applicationId} · ${student.partnerId} · ${student.country}</span>
+          <span>${student.payments} scheduled payments · Original total ${student.country === 'Pakistan' ? 'PKR' : 'INR'} ${formatCurrency(student.committed)}</span>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function renderFilters(){
+      const container = document.getElementById('filters');
+      container.innerHTML = '';
+      columns.filter(c => c.key !== 'actions').forEach(col => {
+        const wrap = document.createElement('div');
+        wrap.className = 'field';
+        const label = document.createElement('label');
+        label.textContent = col.label;
+        label.setAttribute('for', `filter-${col.key}`);
+        wrap.appendChild(label);
+        let el;
+        if(filterTypes[col.key] === 'select'){
+          el = document.createElement('select');
+          const values = [...new Set(data.map(d => d[col.key]).filter(Boolean))];
+          el.innerHTML = `<option value="">All</option>` + values.map(v => `<option>${v}</option>`).join('');
+        } else {
+          el = document.createElement('input');
+          el.type = 'text';
+          el.placeholder = `Filter ${col.label.toLowerCase()}`;
+        }
+        el.id = `filter-${col.key}`;
+        el.dataset.filterKey = col.key;
+        el.addEventListener('input', renderTable);
+        el.addEventListener('change', renderTable);
+        wrap.appendChild(el);
+        container.appendChild(wrap);
+      });
+    }
+
+    function getFilteredData(){
+      return data.filter(row =>
+        columns.filter(c => c.key !== 'actions').every(col => {
+          const el = document.getElementById(`filter-${col.key}`);
+          const filterValue = el ? String(el.value).trim().toLowerCase() : '';
+          if(!filterValue) return true;
+          return String(row[col.key] ?? '').toLowerCase().includes(filterValue);
+        })
+      );
+    }
+
+    function sortRows(rows){
+      const { key, direction } = sortState;
+      return [...rows].sort((a,b) => {
+        const av = a[key] ?? '';
+        const bv = b[key] ?? '';
+        const na = typeof av === 'number';
+        const nb = typeof bv === 'number';
+        let result = (na && nb) ? av - bv : String(av).localeCompare(String(bv), undefined, { numeric:true, sensitivity:'base' });
+        return direction === 'asc' ? result : -result;
+      });
+    }
+
+    function renderHead(){
+      const head = document.getElementById('tableHead');
+      head.innerHTML = '';
+      columns.forEach(col => {
+        const th = document.createElement('th');
+        if(col.key === 'actions'){
+          th.textContent = col.label;
+          head.appendChild(th);
+          return;
+        }
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const arrow = sortState.key === col.key ? (sortState.direction === 'asc' ? '▲' : '▼') : '↕';
+        btn.innerHTML = `<span>${col.label}</span><span>${arrow}</span>`;
+        btn.addEventListener('click', () => {
+          if(sortState.key === col.key){
+            sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+          } else {
+            sortState = { key: col.key, direction:'asc' };
+          }
+          renderHead();
+          renderTable();
+        });
+        th.appendChild(btn);
+        head.appendChild(th);
+      });
+    }
+
+    function renderTable(){
+      const body = document.getElementById('tableBody');
+      body.innerHTML = '';
+      const rows = sortRows(getFilteredData());
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        columns.forEach(col => {
+          const td = document.createElement('td');
+          if(col.key === 'actions'){
+            td.className='table-actions';
+            td.innerHTML = `<button class="small-btn" data-edit-id="${row.recordId}">Edit</button>`;
+            tr.appendChild(td);
+            return;
+          }
+          let value = row[col.key];
+          if(col.key === 'paid'){
+            value = `<span class="badge ${String(row[col.key]).toLowerCase()}">${row[col.key]}</span>`;
+          } else if(col.key === 'amountCommitted' || col.key === 'amountPaid'){
+            value = `${row.country === 'Pakistan' ? 'PKR' : 'INR'} ${formatCurrency(row[col.key])}`;
+          }
+          td.innerHTML = value || '—';
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+      document.getElementById('visibleRecords').textContent = rows.length;
+      body.querySelectorAll('[data-edit-id]').forEach(btn =>
+        btn.addEventListener('click', () => openEditModal(btn.dataset.editId))
+      );
+    }
+
+    function openEditModal(recordId){
+      editingRecordId = recordId;
+      const row = data.find(r => r.recordId === recordId);
+      if(!row) return;
+      const map = {
+        applicationId:'editApplicationId',
+        partnerId:'editPartnerId',
+        studentName:'editStudentName',
+        country:'editCountry',
+        currentYear:'editCurrentYear',
+        currentSemester:'editCurrentSemester',
+        paid:'editPaid',
+        amountCommitted:'editAmountCommitted',
+        amountPaid:'editAmountPaid',
+        paymentDueDate:'editPaymentDueDate',
+        paymentMadeDate:'editPaymentMadeDate',
+        challanNumber:'editChallanNumber',
+        modeOfPayment:'editModeOfPayment',
+        notes:'editNotes'
+      };
+      Object.entries(map).forEach(([key,id]) => {
+        const el = document.getElementById(id);
+        if(el) el.value = row[key] ?? '';
+      });
+      document.getElementById('editMeta').textContent = `${row.applicationId} · ${row.studentName}`;
+      document.getElementById('editModal').classList.add('open');
+      document.getElementById('editModal').setAttribute('aria-hidden','false');
+    }
+
+    function closeEditModal(){
+      document.getElementById('editModal').classList.remove('open');
+      document.getElementById('editModal').setAttribute('aria-hidden','true');
+      editingRecordId = null;
+    }
+
+    function saveEdit(e){
+      e.preventDefault();
+      if(!editingRecordId) return;
+      const row = data.find(r => r.recordId === editingRecordId);
+      if(!row) return;
+      const keys = ['applicationId','partnerId','studentName','country','currentYear','currentSemester','paid','amountCommitted','amountPaid','paymentDueDate','paymentMadeDate','challanNumber','modeOfPayment','notes'];
+      keys.forEach(key => {
+        const id = 'edit' + key.charAt(0).toUpperCase() + key.slice(1);
+        const el = document.getElementById(id);
+        if(!el) return;
+        if(key === 'amountCommitted' || key === 'amountPaid'){
+          row[key] = Number(el.value || 0);
+        } else {
+          row[key] = el.value;
+        }
+      });
+      syncStudentProfiles();
+      renderStudentList();
+      renderFilters();
+      renderHead();
+      renderTable();
+      renderReport();
+      closeEditModal();
+    }
+
+    function resetFormExample(){
+      document.getElementById('applicationId').value = `APP-${2051 + Math.floor(Math.random()*100)}`;
+      document.getElementById('paymentBaseId').value = `PAY-${2051 + Math.floor(Math.random()*100)}`;
+      document.getElementById('studentName').value = 'Ammar Lokhandwala';
+      document.getElementById('partnerId').value = 'IND-PT-08';
+      document.getElementById('country').value = 'India';
+      document.getElementById('courseYears').value = 4;
+      document.getElementById('semestersPerYear').value = 2;
+      document.getElementById('annualScholarship').value = 100000;
+      document.getElementById('startDate').value = '2026-08-15';
+      document.getElementById('currency').value = 'INR';
+      document.getElementById('notes').value = 'Scholarship approved subject to semester progression and marksheet review.';
+      renderSchedulePreview(buildScheduleFromForm().rows);
+    }
+
+    // Reporting helpers
+    function parseISO(dateStr){
+      if(!dateStr) return null;
+      const d = new Date(dateStr + 'T00:00:00');
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function yearFromDateStr(s){
+      const d = parseISO(s);
+      return d ? d.getFullYear() : null;
+    }
+
+    function monthFromDateStr(s){
+      const d = parseISO(s);
+      return d ? (d.getMonth() + 1) : null;
+    }
+
+    function getSelectedNumbers(selectEl){
+      return Array.from(selectEl.selectedOptions).map(o => Number(o.value));
+    }
+
+    function datePassesRange(dateStr, isFutureScope, scope){
+      const d = parseISO(dateStr);
+      if(!d) return false;
+      const today = new Date();
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      let ok = true;
+      if(scope === 'ytd'){
+        const start = new Date(today.getFullYear(),0,1);
+        ok = d >= start && d <= startOfToday;
+      } else if(scope === 'history'){
+        ok = d <= startOfToday;
+      } else if(scope === 'future'){
+        ok = d >= startOfToday;
+      } else {
+        ok = true;
+      }
+      return ok;
+    }
+
+    function renderReport(){
+      const rangeChips = document.querySelectorAll('#rangeChips .chip');
+      const activeChip = Array.from(rangeChips).find(c => c.classList.contains('active'));
+      const scope = activeChip ? activeChip.dataset.range : 'all';
+
+      const yearSel = document.getElementById('yearSelect');
+      const monthSel = document.getElementById('monthSelect');
+      const years = getSelectedNumbers(yearSel);
+      const months = getSelectedNumbers(monthSel);
+
+      const buckets = {
+        India: { Approved:{ students:new Set(), committed:0, paid:0 }, Returning:{ students:new Set(), committed:0, paid:0 } },
+        Pakistan: { Approved:{ students:new Set(), committed:0, paid:0 }, Returning:{ students:new Set(), committed:0, paid:0 } }
+      };
+
+      data.forEach(row => {
+        if(!buckets[row.country]) return;
+        const approvedOrReturning = row.currentYear === '1' ? 'Approved' : 'Returning';
+
+        const dueYear = yearFromDateStr(row.paymentDueDate);
+        const dueMonth = monthFromDateStr(row.paymentDueDate);
+        const madeYear = yearFromDateStr(row.paymentMadeDate);
+        const madeMonth = monthFromDateStr(row.paymentMadeDate);
+
+        const yearMatchCommitted = years.length === 0 || (dueYear && years.includes(dueYear));
+        const monthMatchCommitted = months.length === 0 || (dueMonth && months.includes(dueMonth));
+        const committedDateOk = datePassesRange(row.paymentDueDate, false, scope) && yearMatchCommitted && monthMatchCommitted;
+
+        let yearMatchPaid = true;
+        let monthMatchPaid = true;
+        let paidDateOk = false;
+        if(row.paymentMadeDate){
+          yearMatchPaid = years.length === 0 || (madeYear && years.includes(madeYear));
+          monthMatchPaid = months.length === 0 || (madeMonth && months.includes(madeMonth));
+          paidDateOk = datePassesRange(row.paymentMadeDate, false, scope) && yearMatchPaid && monthMatchPaid;
+        }
+
+        const fx = row.country === 'India' ? FX_INR_TO_CAD : FX_PKR_TO_CAD;
+        const committedCAD = Math.round(row.amountCommitted * fx);
+        const paidCAD = row.paid === 'Y' && paidDateOk ? Math.round(row.amountPaid * fx) : 0;
+
+        const bucket = buckets[row.country][approvedOrReturning];
+
+        if(committedDateOk){
+          bucket.students.add(row.applicationId);
+          bucket.committed += committedCAD;
+        }
+
+        if(paidDateOk){
+          bucket.students.add(row.applicationId);
+          bucket.paid += paidCAD;
+        }
+      });
+
+      const tbody = document.getElementById('reportBody');
+      tbody.innerHTML = '';
+
+      function rowHTML(countryLabel, india, pakistan, isTotal){
+        let src;
+        if (isTotal) {
+          const totalApprovedStudents = new Set([
+            ...india.Approved.students,
+            ...pakistan.Approved.students
+          ]);
+          const totalReturningStudents = new Set([
+            ...india.Returning.students,
+            ...pakistan.Returning.students
+          ]);
+          src = {
+            Approved: {
+              students: totalApprovedStudents,
+              committed: india.Approved.committed + pakistan.Approved.committed,
+              paid: india.Approved.paid + pakistan.Approved.paid
+            },
+            Returning: {
+              students: totalReturningStudents,
+              committed: india.Returning.committed + pakistan.Returning.committed,
+              paid: india.Returning.paid + pakistan.Returning.paid
+            }
+          };
+        } else {
+          src = countryLabel === 'India' ? india : pakistan;
+        }
+
+        const balApproved = src.Approved.committed - src.Approved.paid;
+        const balReturning = src.Returning.committed - src.Returning.paid;
+
+        const cells = [
+          src.Approved.students.size || '',
+          src.Returning.students.size || '',
+          src.Approved.committed ? formatCurrency(src.Approved.committed) : '',
+          src.Returning.committed ? formatCurrency(src.Returning.committed) : '',
+          src.Approved.paid ? formatCurrency(src.Approved.paid) : '',
+          src.Returning.paid ? formatCurrency(src.Returning.paid) : '',
+          balApproved ? formatCurrency(balApproved) : '',
+          balReturning ? formatCurrency(balReturning) : ''
+        ];
+
+        const tr = document.createElement('tr');
+        const th = document.createElement('th');
+        th.scope = 'row';
+        th.textContent = countryLabel;
+        tr.appendChild(th);
+        cells.forEach(v => {
+          const td = document.createElement('td');
+          td.textContent = v || '—';
+          tr.appendChild(td);
+        });
+        return tr;
+      }
+
+      const india = buckets.India;
+      const pakistan = buckets.Pakistan;
+      tbody.appendChild(rowHTML('India', india, pakistan, false));
+      tbody.appendChild(rowHTML('Pakistan', india, pakistan, false));
+      tbody.appendChild(rowHTML('Total in CAD', india, pakistan, true));
+    }
+
+    // Navigation and shell interactions
+    document.querySelectorAll('[data-screen-target]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-screen-target]').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.screenTarget).classList.add('active');
+        if(window.innerWidth <= 1100) appShell.classList.remove('sidebar-open');
+      });
+    });
+
+    document.querySelector('[data-theme-toggle]').addEventListener('click', () => {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+
+    document.getElementById('collapseSidebar').addEventListener('click', () => {
+      if(window.innerWidth <= 1100){
+        appShell.classList.toggle('sidebar-open');
+      } else {
+        appShell.classList.toggle('sidebar-collapsed');
+      }
+    });
+
+    document.getElementById('openMobileMenu').addEventListener('click', () => appShell.classList.add('sidebar-open'));
+    document.getElementById('sidebarBackdrop').addEventListener('click', () => appShell.classList.remove('sidebar-open'));
+
+    document.getElementById('previewSchedule').addEventListener('click', () => {
+      renderSchedulePreview(buildScheduleFromForm().rows);
+    });
+    document.getElementById('loadExample').addEventListener('click', resetFormExample);
+
+    document.getElementById('studentForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const result = buildScheduleFromForm();
+      renderSchedulePreview(result.rows);
+      data = [...result.rows, ...data];
+      syncStudentProfiles();
+      renderStudentList();
+      renderFilters();
+      renderHead();
+      renderTable();
+      renderReport();
+      document.querySelector('[data-screen-target="management-screen"]').click();
+    });
+
+    document.getElementById('resetData').addEventListener('click', () => {
+      buildDummyData();
+      syncStudentProfiles();
+      renderStudentList();
+      renderFilters();
+      renderHead();
+      renderTable();
+      renderSchedulePreview(buildScheduleFromForm().rows);
+      renderReport();
+    });
+
+    document.getElementById('closeModal').addEventListener('click', closeEditModal);
+    document.getElementById('cancelEdit').addEventListener('click', closeEditModal);
+    document.getElementById('editForm').addEventListener('submit', saveEdit);
+
+    // Reporting filter wiring
+    document.querySelectorAll('#rangeChips .chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('#rangeChips .chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        renderReport();
+      });
+    });
+
+    document.getElementById('yearSelect').addEventListener('change', renderReport);
+    document.getElementById('monthSelect').addEventListener('change', renderReport);
+
+    // Bootstrapping
+    (function initYearOptions(){
+      const yearSel = document.getElementById('yearSelect');
+      for(let y = 2020; y <= 2050; y++){
+        const opt = document.createElement('option');
+        opt.value = String(y);
+        opt.textContent = String(y);
+        yearSel.appendChild(opt);
+      }
+    })();
+
+    buildDummyData();
+    renderStudentList();
+    renderFilters();
+    renderHead();
+    renderTable();
+    resetFormExample();
+    renderReport();
+  </script>
+</body>
+</html>
